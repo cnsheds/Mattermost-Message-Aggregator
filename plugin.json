@@ -1,0 +1,34 @@
+{
+  "id": "MessageMerger",
+  "name": "Message Aggregator",
+  "description": "自动聚合消息，将多个用户的确认合并到一条消息中",
+  "version": "1.0.0",
+  "min_server_version": "5.20.0",
+  "server": {
+    "executables": {
+      "linux-amd64": "server/dist/plugin-linux-amd64",
+      "darwin-amd64": "server/dist/plugin-darwin-amd64",
+      "windows-amd64": "server/dist/plugin-windows-amd64.exe"
+    }
+  },
+  "settings_schema": {
+    "header": "配置收到消息聚合插件",
+    "footer": "",
+    "settings": [
+      {
+        "key": "TriggerWords",
+        "display_name": "触发词列表",
+        "type": "text",
+        "help_text": "用逗号分隔的触发词列表，默认为：收到,已收到,确认",
+        "default": "收到,已收到,确认"
+      },
+      {
+        "key": "MaxLookbackMessages",
+        "display_name": "最大回溯消息数",
+        "type": "number",
+        "help_text": "向前查找相同消息的最大消息数量",
+        "default": 5
+      }
+    ]
+  }
+}
