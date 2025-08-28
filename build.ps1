@@ -142,7 +142,7 @@ try {
         try {
             $tarCommand = "tar -czf `"$BUNDLE_NAME`" `"$PLUGIN_ID`""
             Write-Host "Executing: $tarCommand" -ForegroundColor Gray
-            $result = Invoke-Expression $tarCommand
+            Invoke-Expression $tarCommand
         } finally {
             Pop-Location
         }

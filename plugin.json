@@ -28,6 +28,13 @@
         "type": "number",
         "help_text": "向前查找相同消息的最大消息数量",
         "default": 5
+      },
+      {
+        "key": "RejectMessage",
+        "display_name": "合并后返回的拒绝消息",
+        "type": "text",
+        "help_text": "合并后返回的拒绝消息",
+        "default": "消息已合并,无需重复发送"
       }
     ]
   }

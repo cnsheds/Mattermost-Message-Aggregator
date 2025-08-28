@@ -25,6 +25,7 @@ type Plugin struct {
 type configuration struct {
 	TriggerWords        string
 	MaxLookbackMessages int
+	RejectMessage       string
 }
 
 // Clone 深拷贝配置
@@ -75,16 +76,17 @@ func (p *Plugin) OnConfigurationChange() error {
 	return nil
 }
 
-// MessageHasBeenPosted 消息发布后的钩子
-func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
+// MessageWillBePosted 消息发布前的钩子
+func (p *Plugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*model.Post, string) {
 	// 忽略机器人消息
 	if post.Props["from_bot"] == "true" {
-		return
+		return post, ""
 	}
 
 	config := p.getConfiguration()
 	triggerWords := strings.Split(config.TriggerWords, ",")
 
+	post.Message = strings.TrimSpace(post.Message)
 	// 检查消息是否包含触发词
 	messageText := strings.TrimSpace(post.Message)
 	isTriggerMessage := false
@@ -98,39 +100,33 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 	}
 
 	if !isTriggerMessage {
-		return
+		return post, ""
 	}
 
 	// 获取用户信息
 	user, err := p.API.GetUser(post.UserId)
 	if err != nil {
 		p.API.LogError("Failed to get user", "error", err)
-		return
+		return post, ""
 	}
 
+	displayName := user.Nickname
+	if displayName == "" {
+		displayName = user.Username
+	}
 	// 查找最近的相同消息
-	recentPost := p.findRecentSimilarPost(post.ChannelId, messageText, post.Id, config.MaxLookbackMessages)
+	recentPost := p.findRecentSimilarPost(post.ChannelId, messageText, config.MaxLookbackMessages)
 	if recentPost != nil {
 		// 更新现有消息
-		p.updatePostWithUser(recentPost, user.Username, messageText)
-
-		// 删除当前消息
-		if err := p.API.DeletePost(post.Id); err != nil {
-			p.API.LogError("Failed to delete post", "error", err)
-		}
-	} else {
-		// 这是第一条消息，更新为聚合格式
-		updatedMessage := fmt.Sprintf("%s -- %s", messageText, user.Username)
-		post.Message = updatedMessage
-
-		if _, err := p.API.UpdatePost(post); err != nil {
-			p.API.LogError("Failed to update post", "error", err)
-		}
+		p.updatePostWithUser(recentPost, displayName, messageText)
+		// 返回nil阻止当前消息发布
+		return nil, config.RejectMessage
 	}
+	return post, ""
 }
 
 // findRecentSimilarPost 查找最近的相似消息
-func (p *Plugin) findRecentSimilarPost(channelId, messageText, currentPostId string, maxLookback int) *model.Post {
+func (p *Plugin) findRecentSimilarPost(channelId, messageText string, maxLookback int) *model.Post {
 	// 获取最近的消息
 	postList, err := p.API.GetPostsForChannel(channelId, 0, maxLookback+1)
 	if err != nil {
@@ -148,10 +144,6 @@ func (p *Plugin) findRecentSimilarPost(channelId, messageText, currentPostId str
 
 	// 按时间顺序检查消息
 	for _, postId := range postList.Order {
-		if postId == currentPostId {
-			continue
-		}
-
 		post := postList.Posts[postId]
 
 		// 检查是否是聚合格式的相同消息
