@@ -62,7 +62,7 @@ func (p *Plugin) OnConfigurationChange() error {
 
 	// 设置默认值
 	if configuration.TriggerWords == "" {
-		configuration.TriggerWords = "收到,已收到,阿们"
+		configuration.TriggerWords = "收到,已收到,确认"
 	}
 	if configuration.MaxLookbackMessages == 0 {
 		configuration.MaxLookbackMessages = 10
@@ -119,6 +119,16 @@ func (p *Plugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*mode
 	if recentPost != nil {
 		// 更新现有消息
 		p.updatePostWithUser(recentPost, displayName, messageText)
+
+		// 发送系统提示给用户
+		systemPost := &model.Post{
+			UserId:    post.UserId,
+			ChannelId: post.ChannelId,
+			Message:   config.RejectMessage,
+			Type:      "system_ephemeral",
+		}
+		p.API.SendEphemeralPost(post.UserId, systemPost)
+
 		// 返回nil阻止当前消息发布
 		return nil, config.RejectMessage
 	}
