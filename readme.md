@@ -1,177 +1,198 @@
-# Mattermost 收到消息聚合插件
+# MessageMerger - Mattermost Plugin
 
-这个插件可以自动聚合频道中的"收到"确认消息，将多个用户的确认合并到一条消息中，避免频道被大量相同的确认消息刷屏。
+A Mattermost plugin that automatically aggregates confirmation messages, merging multiple user acknowledgments into a single message to reduce channel noise.
 
-## 功能特性
+## Features
 
-- 🎯 **自动聚合**：当多个用户发送相同的确认消息时，自动合并到一条消息中
-- 🔧 **可配置触发词**：支持自定义触发词，默认支持"收到"、"已收到"、"确认"
-- 📊 **用户列表显示**：清晰显示所有已确认的用户名
-- 🚫 **避免重复**：同一用户多次确认不会重复显示
-- ⚡ **实时更新**：消息实时更新，无需刷新页面
+- 🎯 **Auto Aggregation**: Automatically merges identical confirmation messages from multiple users
+- 🔧 **Configurable Trigger Words**: Support custom trigger words (default: 收到, 已收到, 确认)
+- 📊 **User List Display**: Clear display of all confirmed users
+- 🚫 **Duplicate Prevention**: Prevents duplicate entries for the same user
+- ⚡ **Real-time Updates**: Messages update in real-time without page refresh
 
-## 工作原理
+## How It Works
 
-1. 用户A发送"收到" → 消息显示为："收到 -- 用户A"
-2. 用户B发送"收到" → 消息更新为："收到 -- 用户A, 用户B"  
-3. 用户C发送"收到" → 消息更新为："收到 -- 用户A, 用户B, 用户C"
-4. 用户B再次发送"收到" → 消息不变（避免重复）
+1. User A sends "收到" → Message displays: "收到"
+2. User B sends "收到" → Message updates to: "收到 -- UserB"
+3. User C sends "收到" → Message updates to: "收到 -- UserB, UserC"
+4. User B sends "收到" again → Message unchanged (duplicate prevention)
 
-## 安装步骤
+## Installation
 
-### 1. 构建插件
+### Prerequisites
 
-确保你已安装Go 1.16+：
+- Go 1.16 or later
+- Mattermost Server v5.20.0 or later
+
+### Build the Plugin
 
 ```bash
-# 克隆代码
+# Clone the repository
 git clone <repository-url>
-cd mattermost-plugin-received-aggregator
+cd MsgMearge
 
-# 初始化构建工具
+# Initialize build tools
 make apply
 
-# 构建插件
+# Build the plugin
 make dist
 ```
 
-### 2. 安装到Mattermost
+### Install to Mattermost
 
-1. 登录Mattermost管理员界面
-2. 进入 **System Console** → **Plugins** → **Management**
-3. 点击 **Choose File** 上传生成的 `dist/com.example.received-aggregator-1.0.0.tar.gz`
-4. 启用插件
+1. Log in to Mattermost as a System Administrator
+2. Go to **System Console** → **Plugins** → **Management**
+3. Click **Upload Plugin** and select the generated `dist/MessageMerger-1.0.0.tar.gz`
+4. Enable the plugin
 
-### 3. 配置插件
+## Configuration
 
-在插件管理页面找到 **Received Message Aggregator**，点击 **Settings**：
+In the plugin management page, find **Message Aggregator** and click **Settings**:
 
-- **触发词列表**：设置触发聚合的关键词（用逗号分隔）
-  - 默认：`收到,已收到,确认`
-  - 示例：`收到,已收到,确认,OK,好的`
+- **Trigger Words**: Set trigger keywords separated by commas
+  - Default: `收到,已收到,确认`
+  - Example: `收到,已收到,确认,OK,好的`
 
-- **最大回溯消息数**：设置向前查找相同消息的范围
-  - 默认：`10`
-  - 建议：5-20之间
+- **Max Lookback Messages**: Set the range for searching identical messages
+  - Default: `5`
+  - Recommended: 5-20
 
-## 使用示例
+- **Reject Message**: Set the message shown when a duplicate is prevented
+  - Default: `消息已合并,无需重复发送`
 
-### 基本使用
+## Usage Examples
 
-```
-管理员: 请大家确认收到通知
-用户A: 收到
-用户B: 收到  
-用户C: 收到
-```
-
-结果显示：
-```
-管理员: 请大家确认收到通知
-系统: 收到 -- 用户A, 用户B, 用户C
-```
-
-### 自定义触发词
-
-如果配置了触发词为 `收到,确认,OK`：
+### Basic Usage
 
 ```
-管理员: 会议时间确认
-用户A: 确认
-用户B: OK
-用户C: 收到
+Admin: Please confirm receipt of this notice
+UserA: 收到
+UserB: 收到
+UserC: 收到
 ```
 
-结果显示：
+Result:
 ```
-管理员: 会议时间确认
-系统: 确认 -- 用户A
-系统: OK -- 用户B
-系统: 收到 -- 用户C
+Admin: Please confirm receipt of this notice
+System: 收到 -- UserA, UserB, UserC
 ```
 
-## 技术细节
+### Custom Trigger Words
 
-### 核心逻辑
-
-1. **消息监听**：通过 `MessageHasBeenPosted` 钩子监听所有新消息
-2. **触发词匹配**：检查消息是否完全匹配配置的触发词
-3. **历史消息搜索**：在指定范围内查找最近的相同消息
-4. **消息聚合**：更新现有消息或创建新的聚合消息
-5. **重复检测**：避免同一用户重复出现在列表中
-
-### 文件结构
+If configured with trigger words `收到,确认,OK`:
 
 ```
-mattermost-plugin-received-aggregator/
-├── plugin.json          # 插件配置和元数据
-├── plugin.go           # 主要插件逻辑
-├── go.mod              # Go模块依赖
-├── Makefile            # 构建脚本
-└── README.md           # 说明文档
+Admin: Meeting time confirmation
+UserA: 确认
+UserB: OK
+UserC: 收到
 ```
 
-### API钩子使用
+Result:
+```
+Admin: Meeting time confirmation
+System: 确认 -- UserA
+System: OK -- UserB
+System: 收到 -- UserC
+```
 
-- `MessageHasBeenPosted`: 监听新消息
-- `OnConfigurationChange`: 处理配置更新
-- `GetPostsForChannel`: 获取频道历史消息
-- `UpdatePost`: 更新消息内容
-- `DeletePost`: 删除原始消息
+## Development
 
-## 开发和调试
-
-### 本地开发
+### Local Development
 
 ```bash
-# 安装依赖
+# Install dependencies
 go mod tidy
 
-# 运行测试
+# Run tests
 make test
 
-# 构建开发版本
+# Build development version
 make debug-dist
 
-# 部署到开发服务器
+# Deploy to development server
 make deploy
 ```
 
-### 调试技巧
+### Build Commands
 
-1. 查看Mattermost日志：`tail -f mattermost.log`
-2. 检查插件状态：System Console → Plugins → Management
-3. 重启插件：`make reset`
+```bash
+# Build for all platforms
+make dist
 
-## 常见问题
+# Build server only
+make server
 
-### Q: 插件不工作怎么办？
-A: 
-1. 检查插件是否已启用
-2. 确认触发词配置正确
-3. 查看Mattermost服务器日志是否有错误信息
+# Clean build artifacts
+make clean
 
-### Q: 支持哪些消息类型？
-A: 目前只支持普通文本消息，不支持包含附件、表情或格式化的消息
+# Check code style
+make check-style
+```
 
-### Q: 可以支持多语言吗？
-A: 是的，通过修改触发词配置可以支持不同语言的确认词
+## Technical Details
 
-### Q: 消息聚合有数量限制吗？
-A: 没有硬性限制，但建议保持合理数量以确保显示效果
+### Core Logic
 
-## 许可证
+1. **Message Monitoring**: Uses `MessageWillBePosted` hook to listen for new messages
+2. **Trigger Word Matching**: Checks if message exactly matches configured trigger words
+3. **Historical Message Search**: Searches recent messages for identical content
+4. **Message Aggregation**: Updates existing message or creates new aggregated message
+5. **Duplicate Detection**: Prevents same user from appearing multiple times
 
-本项目采用 MIT 许可证。详见 LICENSE 文件。
+### File Structure
 
-## 贡献
+```
+MsgMearge/
+├── plugin.json          # Plugin configuration and metadata
+├── plugin.go           # Main plugin logic
+├── go.mod              # Go module dependencies
+├── go.sum              # Go module checksums
+├── makefile            # Build scripts
+├── build.ps1           # PowerShell build script
+├── dist/               # Build output directory
+├── readme.md           # Chinese documentation
+├── windows_setup_guide.md  # Windows setup guide
+└── README.md           # English documentation
+```
 
-欢迎提交Issue和Pull Request来改进这个插件！
+### API Hooks Used
 
-## 更新日志
+- `MessageWillBePosted`: Monitors new messages before posting
+- `OnConfigurationChange`: Handles configuration updates
+- `GetPostsForChannel`: Retrieves channel history
+- `UpdatePost`: Updates message content
+- `SendEphemeralPost`: Sends temporary system messages
+
+## Troubleshooting
+
+### Q: Plugin not working?
+A:
+1. Check if plugin is enabled
+2. Verify trigger word configuration
+3. Check Mattermost server logs for errors
+
+### Q: What message types are supported?
+A: Currently only supports plain text messages, not messages with attachments, emojis, or formatting.
+
+### Q: Can it support multiple languages?
+A: Yes, by modifying the trigger words configuration to support different language confirmation words.
+
+### Q: Are there limits on message aggregation?
+A: No hard limits, but keep reasonable numbers for display quality.
+
+## License
+
+This project is licensed under the MIT License.
+
+## Contributing
+
+Issues and Pull Requests are welcome to improve this plugin!
+
+## Changelog
 
 ### v1.0.0
-- 初始版本发布
-- 基本的消息聚合功能
-- 可配置触发词和回溯范围
-- 防重复用户显示
+- Initial release
+- Basic message aggregation functionality
+- Configurable trigger words and lookback range
+- Duplicate user prevention
