@@ -31,6 +31,7 @@ type configuration struct {
 	MaxLookbackTime     int
 	MaxLookbackMessages int
 	RejectMessage       string
+	botUser             string
 }
 
 // Clone 深拷贝配置
@@ -358,11 +359,12 @@ func (p *Plugin) updateAggregatedPostSenderNames(post *model.Post, newUsername s
 
 // getBotUserID 获取机器人用户ID
 func (p *Plugin) getBotUserID() string {
+	config := p.getConfiguration()
 	// 获取系统机器人用户
-	botUser, err := p.API.GetUserByUsername("ibot")
+	botUser, err := p.API.GetUserByUsername(config.botUser)
 	if err != nil {
 		// 如果没有找到bot用户，尝试获取系统用户
-		systemUser, err := p.API.GetUserByUsername("system")
+		systemUser, err := p.API.GetUserByUsername("system-bot")
 		if err != nil {
 			p.API.LogError("Failed to get bot or system user", "error", err)
 			return ""

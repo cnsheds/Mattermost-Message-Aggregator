@@ -8,7 +8,7 @@ const style = {
     },
     // 消息内容部分
     content: {
-        marginBottom: '5px', // 与下方用户列表的间距
+        marginBottom: '3px', // 与下方用户列表的间距
         lineHeight: '1.5',
     },
     // 下方灰色用户列表的容器
@@ -37,7 +37,7 @@ const style = {
 const AggregatedPost = ({ post }) => {
     // 从 post.props 中安全地解构出后端插件设置的数据
     const senderNames = post.props?.sender_names || [];
-    
+
     // 从消息内容中提取纯文本部分（去掉\n--后面的人名部分）
     let aggregatedMessage = post.message;
     if (aggregatedMessage.includes('\n--')) {

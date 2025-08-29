@@ -45,6 +45,13 @@
         "type": "text",
         "help_text": "合并后返回的拒绝消息",
         "default": "消息已合并,无需重复发送"
+      },
+      {
+        "key": "botUser",
+        "display_name": "机器人用户名",
+        "type": "text",
+        "help_text": "机器人用户名",
+        "default": "ibot"
       }
     ]
   }
