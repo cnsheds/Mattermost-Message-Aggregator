@@ -8,16 +8,16 @@ const style = {
     },
     // 消息内容部分
     content: {
-        marginBottom: '8px', // 与下方用户列表的间距
+        marginBottom: '5px', // 与下方用户列表的间距
         lineHeight: '1.5',
     },
     // 下方灰色用户列表的容器
     userListContainer: {
         display: 'flex',
         alignItems: 'center',
-        backgroundColor: '#f5f5f5', // 浅灰色背景
+        backgroundColor: '#ebebeb', // 浅灰色背景
         borderRadius: '4px',
-        padding: '8px 12px',
+        padding: '3px 5px',
         color: '#9e00faff', // 较深的灰色文字
     },
     // 人名列表的样式

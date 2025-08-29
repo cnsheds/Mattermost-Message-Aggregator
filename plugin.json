@@ -1,5 +1,5 @@
 {
-  "id": "MessageMerger",
+  "id": "message_merger",
   "name": "Message Aggregator",
   "description": "自动聚合消息，将多个用户的确认合并到一条消息中",
   "version": "1.0.0",
@@ -10,6 +10,9 @@
       "darwin-amd64": "server/dist/plugin-darwin-amd64",
       "windows-amd64": "server/dist/plugin-windows-amd64.exe"
     }
+  },
+  "webapp": {
+    "bundle_path": "webapp/dist/main.js"
   },
   "settings_schema": {
     "header": "配置收到消息聚合插件",
@@ -23,11 +26,18 @@
         "default": "收到,已收到,确认"
       },
       {
+        "key": "MaxLookbackTime",
+        "display_name": "仅回溯几小时内的消息",
+        "type": "number",
+        "help_text": "向前查找相同消息的时间限制(小时)",
+        "default": 6
+      },
+      {
         "key": "MaxLookbackMessages",
         "display_name": "最大回溯消息数",
         "type": "number",
         "help_text": "向前查找相同消息的最大消息数量",
-        "default": 5
+        "default": 3
       },
       {
         "key": "RejectMessage",

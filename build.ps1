@@ -13,7 +13,7 @@ if ($Help) {
 }
 
 # 设置插件信息
-$PLUGIN_ID = "MessageMerger"
+$PLUGIN_ID = "message_merger"
 $PLUGIN_VERSION = "1.0.0"
 $BUNDLE_NAME = "$PLUGIN_ID-$PLUGIN_VERSION.tar.gz"
 
@@ -67,7 +67,9 @@ $directories = @(
     "dist",
     "dist/$PLUGIN_ID",
     "dist/$PLUGIN_ID/server",
-    "dist/$PLUGIN_ID/server/dist"
+    "dist/$PLUGIN_ID/server/dist",
+    "dist/$PLUGIN_ID/webapp",
+    "dist/$PLUGIN_ID/webapp/dist"
 )
 
 foreach ($dir in $directories) {
@@ -120,6 +122,15 @@ Write-Host "Copying files to distribution directory..." -ForegroundColor Cyan
 # 复制plugin.json
 Copy-Item "plugin.json" "dist/$PLUGIN_ID/" -Force
 Write-Host "✓ Copied plugin.json" -ForegroundColor Green
+
+# 复制webapp/dist/main.js
+if (Test-Path "webapp/dist/main.js") {
+    Copy-Item "webapp/dist/main.js" "dist/$PLUGIN_ID/webapp/dist/" -Force
+    Write-Host "✓ Copied webapp/dist/main.js" -ForegroundColor Green
+} else {
+    Write-Host "Warning: webapp/dist/main.js not found" -ForegroundColor Yellow
+    Write-Host "Make sure to build the webapp component first" -ForegroundColor Yellow
+}
 
 Write-Host "✓ Server binaries built directly in dist directory" -ForegroundColor Green
 
@@ -230,4 +241,4 @@ Write-Host "2. Click 'Choose File' and upload the bundle" -ForegroundColor White
 Write-Host "3. Enable the plugin" -ForegroundColor White
 Write-Host "4. Configure the plugin settings as needed" -ForegroundColor White
 
-Read-Host "Press Enter to exit"
+#Read-Host "Press Enter to exit"
