@@ -280,17 +280,21 @@ func (p *Plugin) createAggregatedPost(originalPost *model.Post, newUsername, ori
 		originalDisplayName = originalUser.Username
 	}
 
-	// 创建新的聚合消息
-	aggregatedPost := &model.Post{
-		ChannelId: originalPost.ChannelId,
-		Message:   originalMessage,
-		Type:      POST_TYPE_AGGREGATED,
-	}
-
 	// 在props中添加sender_names数组
 	senderNames := []string{originalDisplayName}
 	if newUsername != originalDisplayName {
 		senderNames = append(senderNames, newUsername)
+	}
+
+	// 构建消息内容 - 直接包含人名，确保移动端也能显示
+	senderNamesText := strings.Join(senderNames, "、")
+	messageContent := originalMessage + "\n--" + senderNamesText
+
+	// 创建新的聚合消息
+	aggregatedPost := &model.Post{
+		ChannelId: originalPost.ChannelId,
+		Message:   messageContent,
+		Type:      POST_TYPE_AGGREGATED,
 	}
 	aggregatedPost.AddProp("sender_names", senderNames)
 	aggregatedPost.AddProp("from_bot", "true")
@@ -334,6 +338,18 @@ func (p *Plugin) updateAggregatedPostSenderNames(post *model.Post, newUsername s
 	senderNames = append(senderNames, newUsername)
 	post.AddProp("sender_names", senderNames)
 
+	// 更新消息内容 - 从原消息中提取纯文本内容
+	originalMessage := post.Message
+	// 如果消息中已经包含人名列表，先移除它
+	if strings.Contains(originalMessage, "\n--") {
+		parts := strings.Split(originalMessage, "\n--")
+		originalMessage = parts[0] // 取第一部分作为原始消息
+	}
+
+	// 构建新的消息内容
+	senderNamesText := strings.Join(senderNames, "、")
+	post.Message = originalMessage + "\n--" + senderNamesText
+
 	// 更新消息
 	if _, err := p.API.UpdatePost(post); err != nil {
 		p.API.LogError("Failed to update aggregated post sender_names", "error", err)
@@ -343,7 +359,7 @@ func (p *Plugin) updateAggregatedPostSenderNames(post *model.Post, newUsername s
 // getBotUserID 获取机器人用户ID
 func (p *Plugin) getBotUserID() string {
 	// 获取系统机器人用户
-	botUser, err := p.API.GetUserByUsername("bot")
+	botUser, err := p.API.GetUserByUsername("ibot")
 	if err != nil {
 		// 如果没有找到bot用户，尝试获取系统用户
 		systemUser, err := p.API.GetUserByUsername("system")

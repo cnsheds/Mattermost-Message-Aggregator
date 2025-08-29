@@ -36,8 +36,13 @@ const style = {
  */
 const AggregatedPost = ({ post }) => {
     // 从 post.props 中安全地解构出后端插件设置的数据
-    const aggregatedMessage = post.message;
     const senderNames = post.props?.sender_names || [];
+    
+    // 从消息内容中提取纯文本部分（去掉\n--后面的人名部分）
+    let aggregatedMessage = post.message;
+    if (aggregatedMessage.includes('\n--')) {
+        aggregatedMessage = aggregatedMessage.split('\n--')[0];
+    }
 
     // 如果没有发送者列表，可以不渲染下方的灰色区域
     const hasSenders = senderNames.length > 0;

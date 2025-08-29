@@ -6,12 +6,12 @@ const POST_TYPE_AGGREGATED = 'custom_aggregated';
 
 class MPlugin {
     initialize(registry, store) {
-        console.log('MessageMerger webapp plugin initializing...');
+        //console.log('MessageMerger webapp plugin initializing...');
         registry.registerPostTypeComponent(POST_TYPE_AGGREGATED, AggregatedPost);
     }
 
     uninitialize() {
-        console.log('MessageMerger webapp plugin uninitialize');
+        //console.log('MessageMerger webapp plugin uninitialize');
     }
 }
 
