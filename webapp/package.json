@@ -1,0 +1,27 @@
+{
+  "name": "messagemerger-webapp",
+  "version": "1.0.0",
+  "author": "Snow",
+  "license": "MIT",
+  "description": "MessageMerger webapp plugin for highlighting usernames in merged messages",
+  "main": "src/index.js",
+  "private": true,
+  "scripts": {
+    "build": "webpack --mode=production",
+    "dev": "webpack --mode=development --watch"
+  },
+  "dependencies": {
+    "react": "^19.1.1",
+    "mattermost-redux": "10.8.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.3",
+    "@babel/preset-env": "^7.28.3",
+    "@babel/preset-react": "^7.27.1",
+    "babel-loader": "^9.2.1",
+    "css-loader": "^6.8.0",
+    "style-loader": "^3.3.0",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^5.1.4"
+  }
+}
