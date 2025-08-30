@@ -253,7 +253,12 @@ func (p *Plugin) findRecentSimilarPost(channelId, messageText string, currentPos
 		// 优先检查聚合消息
 		if post.Type == POST_TYPE_AGGREGATED {
 			// 检查聚合消息是否与原始消息相同
-			if strings.TrimSpace(post.Message) == messageText {
+			postMessage := post.Message
+			if strings.Contains(postMessage, "\n--") {
+				parts := strings.Split(postMessage, "\n--")
+				postMessage = parts[0]
+			}
+			if strings.TrimSpace(postMessage) == messageText {
 				return post
 			}
 		}
