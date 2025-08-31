@@ -151,7 +151,7 @@ try {
         # 切换到dist目录再执行tar命令
         Push-Location "dist"
         try {
-            $tarCommand = "tar -czf `"$BUNDLE_NAME`" `"$PLUGIN_ID`""
+            $tarCommand = "tar --transform=`"s/$PLUGIN_ID/server/dist/plugin-linux-amd64/&/`" --mode=755 -czf `"$BUNDLE_NAME`" `"$PLUGIN_ID`""
             Write-Host "Executing: $tarCommand" -ForegroundColor Gray
             Invoke-Expression $tarCommand
         } finally {

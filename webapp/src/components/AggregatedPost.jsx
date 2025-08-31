@@ -13,7 +13,7 @@ const style = {
     },
     // 下方灰色用户列表的容器
     userListContainer: {
-        display: 'flex',
+        display: 'inline-flex',
         alignItems: 'center',
         backgroundColor: '#ebebeb', // 浅灰色背景
         borderRadius: '4px',
