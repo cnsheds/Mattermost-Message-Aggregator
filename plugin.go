@@ -244,16 +244,10 @@ func (p *Plugin) findRecentSimilarPost(channelId, messageText string, currentPos
 			continue
 		}
 		post := postList.Posts[postId]
-
-		// 检查消息时间是否超过6小时
-		if (time.Now().Unix() - post.UpdateAt/1000) > int64(config.MaxLookbackTime*60*60) {
-			break
-		}
-
+		postMessage := strings.TrimSpace(post.Message)
 		// 优先检查聚合消息
 		if post.Type == POST_TYPE_AGGREGATED {
 			// 检查聚合消息是否与原始消息相同
-			postMessage := post.Message
 			if strings.Contains(postMessage, "\n--") {
 				parts := strings.Split(postMessage, "\n--")
 				postMessage = parts[0]
@@ -261,11 +255,22 @@ func (p *Plugin) findRecentSimilarPost(channelId, messageText string, currentPos
 			if strings.TrimSpace(postMessage) == messageText {
 				return post
 			}
+			// 如果聚合消息不匹配, 就开始一个新的
+			return nil
 		}
 
 		// 检查是否是完全相同的消息
 		if strings.TrimSpace(post.Message) == messageText {
 			return post
+		}
+		// 如果是一个长消息并且包含要合并的词, 终止向前查找
+		if strings.Contains(postMessage, messageText) && len(postMessage) > 10 {
+			break
+		}
+
+		// 检查消息时间是否超过6小时
+		if (time.Now().Unix() - post.UpdateAt/1000) > int64(config.MaxLookbackTime*60*60) {
+			break
 		}
 	}
 
